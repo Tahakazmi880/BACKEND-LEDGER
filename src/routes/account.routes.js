@@ -11,6 +11,9 @@ const {
 // create account
 router.post("/create-account", authMiddleware, createAccountController);
 
+
+
+
 // get logged-in user accounts
 router.get("/", authMiddleware, getUserAccountsController);
 
