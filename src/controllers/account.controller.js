@@ -1,55 +1,54 @@
-const accountModel = require("../models/account.model.js");
+const accountModel = require("../models/account.model");
 
-// Create Account
+
 async function createAccountController(req, res) {
-    try {
 
-        const userId = req.user._id; // auth middleware se aa raha hai
-        const { currency } = req.body;
+    const user = req.user;
 
-        const account = await accountModel.create({
-            user: userId,
-            currency
-        });
+    const account = await accountModel.create({
+        user: user._id
+    })
 
-        return res.status(201).json({
-            message: "Account created successfully",
-            status: "success",
-            account
-        });
+    res.status(201).json({
+        account
+    })
 
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message,
-            status: "failed"
-        });
-    }
 }
 
-
-// Get all accounts of logged-in user
 async function getUserAccountsController(req, res) {
-    try {
 
-        const userId = req.user._id;
+    const accounts = await accountModel.find({ user: req.user._id });
 
-        const accounts = await accountModel.find({ user: userId });
-
-        return res.status(200).json({
-            message: "Accounts fetched successfully",
-            status: "success",
-            accounts
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message,
-            status: "failed"
-        });
-    }
+    res.status(200).json({
+        accounts
+    })
 }
+
+async function getAccountBalanceController(req, res) {
+    const { accountId } = req.params;
+
+    const account = await accountModel.findOne({
+        _id: accountId,
+        user: req.user._id
+    })
+
+    if (!account) {
+        return res.status(404).json({
+            message: "Account not found"
+        })
+    }
+
+    const balance = await account.getBalance();
+
+    res.status(200).json({
+        accountId: account._id,
+        balance: balance
+    })
+}
+
 
 module.exports = {
     createAccountController,
-    getUserAccountsController
-};
+    getUserAccountsController,
+    getAccountBalanceController
+}
